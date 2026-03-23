@@ -1,6 +1,7 @@
 const musicModel = require('../models/music.model');
+const albumModel = require('../models/album.model');
 const jwt = require('jsonwebtoken');
-const { uploadFile } = require('../services/storage.service'); // Only one import!
+const { uploadFile } = require('../services/storage.service'); 
 
 async function uploadMusic(req, res) {
     const token = req.cookies.token;
@@ -56,4 +57,45 @@ async function uploadMusic(req, res) {
     }
 }
 
-module.exports = { uploadMusic };
+async function getAlbum(req, res){
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized!" });
+    }
+
+    let decoded;
+
+    try{
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (decoded.role !== "artist") {
+            return res.status(403).json({
+                message: "You do not have the access to create music!"
+            });
+        }
+
+        const {title, musicIDs} = req.body;
+
+        const album = await albumModel.create({
+            title,
+            artist: decoded.id,
+            musics: musicIDs
+        })
+
+        res.status(201).json({
+            message: "Album created successfully!"
+        })
+    }
+
+
+    catch(error) {
+    console.error("Album Creation Error:", error); // This will tell you EXACTLY what is wrong
+    return res.status(500).json({
+        message: "Internal Server Error",
+        error: error.message
+    });
+}
+}
+
+module.exports = { uploadMusic , getAlbum};
