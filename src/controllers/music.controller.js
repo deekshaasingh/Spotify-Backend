@@ -1,3 +1,4 @@
+const userModel = require('../models/user.model');
 const musicModel = require('../models/music.model');
 const albumModel = require('../models/album.model');
 const jwt = require('jsonwebtoken');
@@ -98,4 +99,19 @@ async function getAlbum(req, res){
 }
 }
 
-module.exports = { uploadMusic , getAlbum};
+async function getLibrary(req, res) {
+    try {
+        const songs = await musicModel.find().populate('artist', 'username');
+        const albums = await albumModel.find().populate('artist', 'username');
+
+        res.status(200).json({ songs, albums });
+    } catch (error) {
+        // Look at your VS Code terminal after you see this!
+        console.error("DETAILED ERROR:", error); 
+        res.status(500).json({ 
+            message: "Library Error", 
+            error: error.message 
+        });
+    }
+}
+module.exports = { uploadMusic , getAlbum, getLibrary};

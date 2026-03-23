@@ -8,6 +8,7 @@ const upload = multer({
 
 const router = express.Router();
 
+router.get('/', musicController.getLibrary);
 router.post('/upload', upload.single('music'), musicController.uploadMusic);
 router.post('/albums', upload.array('music') ,musicController.getAlbum);
 
